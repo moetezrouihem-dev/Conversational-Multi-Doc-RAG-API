@@ -67,8 +67,6 @@ Conversational multi-doc assistant with memory/
 ├── rag.py                # Core RAG engine (RAGSystem class)
 ├── requirements.txt       # Python dependencies
 ├── .env                    # GROQ_API_KEY (not committed)
-├── .gitignore
-├── rag.ipynb               # Dev/exploration notebook (optional)
 ├── README.md
 └── index.html          # Minimal chat UI, opened directly in a browser
 ```
