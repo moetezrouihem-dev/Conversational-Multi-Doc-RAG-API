@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Multi-Doc RAG Chat</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 700px; margin: 40px auto; padding: 0 20px; }
+  h1 { font-size: 1.4rem; }
+  #chat { border: 1px solid #ddd; border-radius: 8px; padding: 16px; min-height: 200px; margin-bottom: 16px; }
+  .msg { margin-bottom: 12px; }
+  .user { font-weight: 600; }
+  .bot { color: #333; }
+  .sources { font-size: 0.8rem; color: #888; margin-top: 4px; }
+  input, button { padding: 8px 12px; font-size: 1rem; }
+  #question { width: 70%; }
+  #status { color: #888; font-size: 0.9rem; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<h1>📚 Chat with your PDFs</h1>
+
+<label>API base URL: <input id="apiUrl" value="http://localhost:8000" style="width: 300px;"></label>
+<p></p>
+
+<input type="file" id="fileInput" multiple accept="application/pdf">
+<button onclick="upload()">Upload & Index</button>
+<div id="status"></div>
+
+<p></p>
+<div id="chat"></div>
+
+<input type="text" id="question" placeholder="Ask a question about your documents...">
+<button onclick="ask()">Send</button>
+<button onclick="resetChat()">Reset conversation</button>
+
+<script>
+let sessionId = null;
+
+async function upload() {
+  const files = document.getElementById('fileInput').files;
+  if (!files.length) { alert('Choose at least one PDF first.'); return; }
+
+  const formData = new FormData();
+  for (const f of files) formData.append('files', f);
+
+  document.getElementById('status').innerText = 'Uploading and indexing...';
+  const res = await fetch(document.getElementById('apiUrl').value + '/upload', {
+    method: 'POST', body: formData
+  });
+  const data = await res.json();
+  if (!res.ok) { document.getElementById('status').innerText = 'Error: ' + data.detail; return; }
+
+  sessionId = data.session_id;
+  document.getElementById('status').innerText =
+    `Indexed ${data.chunks_indexed} chunks from ${data.files_processed.join(', ')}. Session ready.`;
+}
+
+async function ask() {
+  const question = document.getElementById('question').value.trim();
+  if (!question) return;
+  if (!sessionId) { alert('Upload documents first.'); return; }
+
+  addMessage('user', question);
+  document.getElementById('question').value = '';
+
+  const res = await fetch(document.getElementById('apiUrl').value + '/query', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_id: sessionId, question })
+  });
+  const data = await res.json();
+  if (!res.ok) { addMessage('bot', 'Error: ' + data.detail); return; }
+
+  addMessage('bot', data.answer, data.sources);
+}
+
+async function resetChat() {
+  if (!sessionId) return;
+  await fetch(document.getElementById('apiUrl').value + '/reset', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_id: sessionId })
+  });
+  document.getElementById('chat').innerHTML = '';
+}
+
+function addMessage(role, text, sources) {
+  const chat = document.getElementById('chat');
+  const div = document.createElement('div');
+  div.className = 'msg';
+  let sourcesHtml = '';
+  if (sources && sources.length) {
+    sourcesHtml = `<div class="sources">Sources: ${sources.map(s => `${s.file} (p.${s.page})`).join(', ')}</div>`;
+  }
+  div.innerHTML = `<span class="${role}">${role === 'user' ? 'You' : 'Bot'}:</span> ${text}${sourcesHtml}`;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+</script>
+
+</body>
+</html>
