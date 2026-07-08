@@ -70,8 +70,7 @@ Conversational multi-doc assistant with memory/
 ├── .gitignore
 ├── rag.ipynb               # Dev/exploration notebook (optional)
 ├── README.md
-└── frontend/
-    └── index.html          # Minimal chat UI, opened directly in a browser
+└── index.html          # Minimal chat UI, opened directly in a browser
 ```
 
 > **Note:** `main.py` and `rag.py` live at the project root — they are not inside an `app/` package. Run the server with `uvicorn main:app`, not `uvicorn app.main:app`.
