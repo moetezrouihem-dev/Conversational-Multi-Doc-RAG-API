@@ -8,7 +8,7 @@ from langchain_core.documents import Document
 
 _EMBEDDING_MODEL = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
-MAX_HISTORY_TURNS = 5  # bounded memory: only the last N (question, answer) pairs are kept
+MAX_HISTORY_TURNS = 5  
 
 
 class RAGSystem:
@@ -16,16 +16,12 @@ class RAGSystem:
         self.embedding_model = _EMBEDDING_MODEL
         self.llm = ChatGroq(model=groq_model, temperature=0.3, api_key=groq_api_key)
         self.db: FAISS | None = None
-        self.chat_history: list[tuple[str, str]] = []  # [(question, answer), ...]
+        self.chat_history: list[tuple[str, str]] = []
 
     
 
     def add_documents(self, files: list[tuple[str, bytes]]) -> int:
-        """
-        files: list of (filename, raw_pdf_bytes)
-        Extracts text, chunks it, embeds it, and either creates or extends the FAISS index.
-        Returns the number of chunks added.
-        """
+    
         docs: list[Document] = []
 
         for filename, raw_bytes in files:
@@ -34,7 +30,7 @@ class RAGSystem:
                 text = page.extract_text() or ""
                 if not text.strip():
                     continue
-                # metadata is what makes source citations possible later
+                
                 docs.append(Document(page_content=text, metadata={"source": filename, "page": page_num}))
 
         if not docs:
@@ -46,7 +42,7 @@ class RAGSystem:
         if self.db is None:
             self.db = FAISS.from_documents(chunks, self.embedding_model)
         else:
-            self.db.add_documents(chunks)  # extend existing index instead of rebuilding from scratch
+            self.db.add_documents(chunks)  
 
         return len(chunks)
 
