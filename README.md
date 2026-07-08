@@ -5,7 +5,7 @@ A conversational AI assistant that lets you upload multiple PDFs and ask natural
 Built as a portfolio project to demonstrate a full, working RAG (Retrieval-Augmented Generation) pipeline: document ingestion, chunking, embedding, vector search, conversational memory, and grounded generation — served through a simple API with a lightweight browser UI.
 
 ---
-
+![Chat demo with multiple PDFs](screenshots/chat-demo.png)
 ## ✨ Features
 
 - **Multi-document upload** — index several PDFs into a single session
