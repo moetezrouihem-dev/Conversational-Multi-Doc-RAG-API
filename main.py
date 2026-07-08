@@ -77,7 +77,6 @@ def query(req: QueryRequest):
 
 @app.post("/reset")
 def reset(req: ResetRequest):
-    """Clears conversation history for a session, keeps the uploaded documents."""
     rag = sessions.get(req.session_id)
     if rag is None:
         raise HTTPException(status_code=404, detail="Session not found.")
@@ -88,7 +87,6 @@ def reset(req: ResetRequest):
 
 @app.delete("/session/{session_id}")
 def delete_session(session_id: str):
-    """Deletes a session entirely (documents + history)."""
     if session_id in sessions:
         del sessions[session_id]
         return {"status": "session deleted"}
