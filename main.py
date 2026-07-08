@@ -39,10 +39,6 @@ def health():
 
 @app.post("/upload")
 async def upload_documents(files: list[UploadFile] = File(...)):
-    """
-    Upload one or more PDFs. Returns a session_id — keep it and send it
-    with every /query and /reset call so your documents and chat history persist.
-    """
     if not files:
         raise HTTPException(status_code=400, detail="No files uploaded.")
 
